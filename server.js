@@ -187,14 +187,14 @@ app.post("/signup", async (req, res) => {
 
         if (existingUser) {
             console.log("User already exists:", existingUser);
-            return res.status(409).redirect('/urexist');
+            return res.status(409);
         } else {
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(data.password, saltRounds);
             data.password = hashedPassword;
             await collection.insertMany(data);
             console.log("User registered successfully:", data);
-            return res.status(200).redirect('successful'); 
+            return res.status(200); 
         }
     } catch (error) {
         console.error("Error registering user:", error);
