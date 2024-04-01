@@ -157,14 +157,17 @@ app.post("/login", async(req,res)=>{
         const isPasswordMatch = await bcrypt.compare(password, user.password);
 
         if(isPasswordMatch){
-            res.status(200).redirect('/');
+            res.status(200).send('success');
+            console.log("success")
         }
         else{
             res.status(401).send("Wrong password");
+            console.log("wrong")
         }
     } catch(error) {
         console.error("Error logging in:", error);
         res.status(500).send("Internal server error. Please try again later.");
+        console.log("wrong")
     }
 });
 
@@ -175,26 +178,28 @@ app.post("/signup", async (req, res) => {
         mno: req.body.mno,
         password: req.body.password
     }
+    const otp=req.body.otp;
 
     try {
         const existingUser = await collection.findOne({
             $or: [
                 { name: data.name },
                 { email: data.email },
-                { mno: data.mno }
+                { mno: data.mno },
+                { $and: [ { email: data.email }, { otp: otpMap[data.email] } ] }
             ]
         });
 
         if (existingUser) {
             console.log("User already exists:", existingUser);
-            return res.status(409);
+            res.status(409).send('urexist');
         } else {
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(data.password, saltRounds);
             data.password = hashedPassword;
             await collection.insertMany(data);
             console.log("User registered successfully:", data);
-            return res.status(200); 
+            res.status(201).send('successful'); 
         }
     } catch (error) {
         console.error("Error registering user:", error);
